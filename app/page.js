@@ -39,21 +39,21 @@ export default function Home() {
             Want to try out a few things?
           </p>
 
-          {/* First input centered */}
+          {/* First input centered with embedded button */}
           <form
             onSubmit={handleSubmit}
-            className="w-full max-w-xl flex items-center gap-2"
+            className="w-full max-w-xl relative h-[200px]  bg-gray-800 flex flex-col justify-between p-5 gap-3 rounded-lg"
           >
             <input
               type="text"
               value={value}
               onChange={(e) => setValue(e.target.value)}
-              placeholder="Ask here..."
-              className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-6 py-4 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 h-[200px]"
+              placeholder="What do you want to generate today ?"
+              className="w-full bg-gray-800 border-none outline-none text-lg h-16 text-md"
             />
             <button
               type="submit"
-              className="bg-blue-600 p-4 rounded-full hover:bg-blue-700 transition flex items-center justify-center"
+              className="w-max h-max self-end  bg-blue-600 p-3 rounded-full hover:bg-blue-700 transition flex items-center justify-center"
             >
               <FaArrowUp />
             </button>
@@ -64,9 +64,7 @@ export default function Home() {
       {/* Chat section after start */}
       {started && (
         <div className="flex-1 flex flex-col px-6 py-6 space-y-4">
-          {/* Input stays at the top now */}
-
-          {/* Messages appear below input */}
+          {/* Messages area */}
           <div className="overflow-y-auto space-y-4">
             {messages.map((msg, i) => (
               <div
@@ -88,20 +86,21 @@ export default function Home() {
             ))}
           </div>
 
+          {/* Input stays at bottom for chat */}
           <form
             onSubmit={handleSubmit}
-            className="w-full max-w-2xl flex items-center gap-2 mt-5 ml-auto"
+            className="w-full max-w-2xl relative mt-5 ml-auto"
           >
             <input
               type="text"
               value={value}
               onChange={(e) => setValue(e.target.value)}
               placeholder="Ask here..."
-              className="flex-1 bg-gray-800 border border-gray-700 rounded-full px-6 py-4 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full bg-gray-800 border border-gray-700 rounded-full px-6 pr-14 py-4 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <button
               type="submit"
-              className="bg-blue-600 p-4 rounded-full hover:bg-blue-700 transition flex items-center justify-center"
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-blue-600 p-3 rounded-full hover:bg-blue-700 transition flex items-center justify-center"
             >
               <FaArrowUp />
             </button>
