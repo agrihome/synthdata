@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { FaArrowUp } from "react-icons/fa";
+import "./scroll.css";
 
 export default function Home() {
   const [messages, setMessages] = useState([]); // {role: "user"|"ai", text: string}
   const [value, setValue] = useState("");
   const [started, setStarted] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -16,6 +18,7 @@ export default function Home() {
     setMessages((prev) => [...prev, userMessage]);
     setValue("");
     setStarted(true);
+    setLoading(true);
 
     // simulate AI response (replace this with fetch to your backend)
     setTimeout(() => {
@@ -24,11 +27,35 @@ export default function Home() {
         text: `Synthetic data generated for: "${userMessage.text}"`,
       };
       setMessages((prev) => [...prev, aiMessage]);
+      setLoading(false);
     }, 800);
   };
 
+  const textareaRef = useRef(null);
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto"; // reset height
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`; // set new height
+    }
+  }, [value]);
+
+  const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollTo({
+        top: messagesEndRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+    }
+  }, [messages]);
+
   return (
-    <div className="bg-gray-900 text-white min-h-screen flex flex-col">
+    <div className="bg-gray-900 text-white min-h-screen flex flex-col p-10">
+      <h1 className="text-3xl font-bold mb-2">
+        Synthetic <span className="text-blue-400">DATA</span> Generator
+      </h1>
       {/* Greeting before chat starts */}
       {!started && (
         <div className="flex-1 flex flex-col items-center justify-center text-center px-4">
@@ -42,18 +69,18 @@ export default function Home() {
           {/* First input centered with embedded button */}
           <form
             onSubmit={handleSubmit}
-            className="w-full max-w-xl relative h-[200px]  bg-gray-800 flex flex-col justify-between p-5 gap-3 rounded-lg"
+            className="w-full max-w-xl relative   bg-gray-800 flex flex-col justify-between rounded-lg gap-2 "
           >
-            <input
+            <textarea
               type="text"
               value={value}
               onChange={(e) => setValue(e.target.value)}
               placeholder="What do you want to generate today ?"
-              className="w-full bg-gray-800 border-none outline-none text-lg h-16 text-md"
+              className="w-full border-none outline-none text-lg text-md ::placeholder: p-5 h-[200px] scroll-width-none rounded-lg resize-none  "
             />
             <button
               type="submit"
-              className="w-max h-max self-end  bg-blue-600 p-3 rounded-full hover:bg-blue-700 transition flex items-center justify-center"
+              className="w-max h-max self-end   bg-blue-600 p-3 rounded-full hover:bg-blue-700 transition flex items-center justify-center mb-5 mr-5"
             >
               <FaArrowUp />
             </button>
@@ -61,46 +88,65 @@ export default function Home() {
         </div>
       )}
 
-      {/* Chat section after start */}
       {started && (
-        <div className="flex-1 flex flex-col px-6 py-6 space-y-4">
+        <div className="px-6 py-6 space-y-4 pb-15 flex flex-col justify-between flex-1 relative">
           {/* Messages area */}
-          <div className="overflow-y-auto space-y-4">
+          <div
+            ref={messagesEndRef}
+            className="overflow-y-auto space-y-16 flex-1 max-h-[70vh] scrollbar-none"
+          >
             {messages.map((msg, i) => (
               <div
                 key={i}
-                className={`flex ${
+                className={`flex  ${
                   msg.role === "user" ? "justify-end" : "justify-start"
                 }`}
               >
                 <div
-                  className={`px-4 py-3 rounded-2xl max-w-xs ${
+                  className={`rounded-2xl ${
                     msg.role === "user"
-                      ? "bg-blue-600 text-white rounded-br-none"
-                      : "bg-gray-800 text-gray-100 rounded-bl-none"
+                      ? "bg-blue-600 text-white rounded-br-none max-w-[55%] px-4 py-3 "
+                      : " text-gray-100 p-10 max-w-5xl w-full  "
                   }`}
                 >
                   {msg.text}
                 </div>
               </div>
             ))}
+
+            {/* Loader bubble */}
+            {loading && (
+              <div className="flex justify-start">
+                <div className="px-4 py-3 rounded-2xl bg-gray-800 text-gray-400 rounded-bl-none max-w-[55%] flex gap-2 items-center">
+                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Input stays at bottom for chat */}
+          {/* Input stays at bottom */}
           <form
             onSubmit={handleSubmit}
-            className="w-full max-w-2xl relative mt-5 ml-auto"
+            className="w-full absolute bottom-0 left-0 flex flex-col"
           >
-            <input
-              type="text"
+            <textarea
+              ref={textareaRef}
               value={value}
               onChange={(e) => setValue(e.target.value)}
-              placeholder="Ask here..."
-              className="w-full bg-gray-800 border border-gray-700 rounded-full px-6 pr-14 py-4 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  handleSubmit(e);
+                }
+              }}
+              placeholder="Chat here ..."
+              className="w-full self-end bg-gray-800 border max-h-[200px] min-h-[60px] border-gray-700 rounded-2xl px-6 pr-14 py-4 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none overflow-hidden"
             />
             <button
               type="submit"
-              className="absolute right-2 top-1/2 -translate-y-1/2 bg-blue-600 p-3 rounded-full hover:bg-blue-700 transition flex items-center justify-center"
+              disabled={loading}
+              className="w-fit h-fit absolute right-0 bottom-0 bg-blue-600 p-3 rounded-full hover:bg-blue-700 transition flex items-center justify-center mb-2 mr-2 disabled:opacity-50"
             >
               <FaArrowUp />
             </button>
